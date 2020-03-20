@@ -49,7 +49,7 @@ public class CanvasWorker extends SwingWorker<Void, String> {
     }
 
     protected void process(List<String> commands) {
-        commands.forEach(this::executeCommand);
+        executeCommand(commands.get(commands.size()-1));
     }
 
     private void executeCommand(String command) {
@@ -118,7 +118,7 @@ public class CanvasWorker extends SwingWorker<Void, String> {
     }
 
     private void showMessage(String message){
-        JOptionPane.showMessageDialog(new JFrame(), message, "Dialog",
+        JOptionPane.showMessageDialog(new JFrame(), message, "Canvas Painter",
                 JOptionPane.ERROR_MESSAGE);
     }
 }
