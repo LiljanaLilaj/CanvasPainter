@@ -7,20 +7,24 @@ import java.awt.*;
 
 class CanvasComponent extends JFrame {
 
-    private final CharCanvas canvas;
+    private CharCanvas canvas;
 
-    CanvasComponent(CharCanvas canvas) throws HeadlessException {
-        this.canvas = canvas;
-        add(canvas);
+    CanvasComponent() throws HeadlessException {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setTitle("Canvas Paint Exercise");
-        pack();
-        setVisible(true);
+        setLocationRelativeTo(null);
     }
 
-    void drawCanvas(int width, int height) {
-        canvas.draw(width, height);
-        repaint();
+    void initialise(int width, int height) {
+        if (canvas == null) {
+            canvas = new CharCanvas(width, height);
+            add(canvas);
+            pack();
+            setVisible(true);
+        }
+
+        canvas.initialise(width, height);
+        pack();
     }
 
     void updateCanvas(CharShape shape) {

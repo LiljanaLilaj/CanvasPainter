@@ -5,6 +5,7 @@ import canvas.shape.CharLine;
 import canvas.shape.CharRectangle;
 import canvas.shape.ShapeFactory;
 
+import javax.swing.*;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -13,7 +14,7 @@ import static canvas.CommandParser.getCoordinates;
 
 public class CanvasExercise {
 
-    private CanvasComponent canvasComponent;
+    private final CanvasComponent canvasComponent;
     private final Map<String, Consumer<String>> shapeMapping;
     private int currentWidth;
     private int currentHeight;
@@ -21,6 +22,7 @@ public class CanvasExercise {
     private CanvasExercise() {
         currentWidth = 0;
         currentHeight = 0;
+        canvasComponent = new CanvasComponent();
         shapeMapping = new HashMap<String, Consumer<String>>() {{
             put("L", (command -> drawLine(command)));
             put("R", (command -> drawRectangle(command)));
@@ -47,7 +49,6 @@ public class CanvasExercise {
                 executeCommand(input);
             }
         }
-
     }
 
     private void executeCommand(String command) {
@@ -59,9 +60,11 @@ public class CanvasExercise {
 
     private void drawCanvas(String command) {
         if (validCommand(() -> CommandParser.validateCanvas(command))) {
-            createCanvas(command);
-            CharBox box = ShapeFactory.createBox(currentWidth + 2, currentHeight + 2);
-            canvasComponent.updateCanvas(box);
+            updateCanvas(() -> {
+                createCanvas(command);
+                CharBox box = ShapeFactory.createBox(currentWidth + 2, currentHeight + 2);
+                canvasComponent.updateCanvas(box);
+            });
         }
     }
 
@@ -71,29 +74,25 @@ public class CanvasExercise {
         currentHeight = coordinates.get(1);
         int width = currentWidth + 2; // add 2 for vertical borders of the box
         int height = currentHeight + 2; // add 2 for horizontal borders of the box
-        Optional.ofNullable(canvasComponent)
-                .orElseGet(() -> createNewComponent(width, height))
-                .drawCanvas(width, height);
-    }
-
-    private CanvasComponent createNewComponent(int width, int height) {
-        CharCanvas canvasPainter = new CharCanvas(width, height);
-        canvasComponent = new CanvasComponent(canvasPainter);
-        return canvasComponent;
+        canvasComponent.initialise(width, height);
     }
 
     private void drawLine(String command) {
         if (canvasExists() && validCommand(() -> CommandParser.validateLine(command, currentWidth, currentHeight))) {
             CharLine charLine = ShapeFactory.createLine(command);
-            canvasComponent.updateCanvas(charLine);
+            updateCanvas(() -> canvasComponent.updateCanvas(charLine));
         }
     }
 
     private void drawRectangle(String command) {
         if (canvasExists() && validCommand(() -> CommandParser.validateRectangle(command, currentWidth, currentHeight))) {
             CharRectangle recPainter = ShapeFactory.createRectangle(command);
-            canvasComponent.updateCanvas(recPainter);
+            updateCanvas(() -> canvasComponent.updateCanvas(recPainter));
         }
+    }
+
+    private void updateCanvas(Runnable run) {
+        SwingUtilities.invokeLater((run));
     }
 
     private Consumer<String> invalidLetterCommand() {

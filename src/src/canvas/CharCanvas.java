@@ -14,10 +14,9 @@ public class CharCanvas extends JPanel {
     CharCanvas(int width, int height) {
         this.width = width;
         this.height = height;
-        setCanvasSize();
     }
 
-    void draw(int w, int h) {
+    void initialise(int w, int h) {
         this.width = w;
         this.height = h;
         initialiseChars();
