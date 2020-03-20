@@ -1,5 +1,6 @@
 package canvas;
 
+import javax.swing.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;

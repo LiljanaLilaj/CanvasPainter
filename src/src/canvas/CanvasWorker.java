@@ -50,7 +50,6 @@ public class CanvasWorker extends SwingWorker<Void, String> {
 
     protected void process(List<String> commands) {
         commands.forEach(this::executeCommand);
-        canvasComponent.repaint();
     }
 
     private void executeCommand(String command) {
@@ -98,12 +97,12 @@ public class CanvasWorker extends SwingWorker<Void, String> {
     }
 
     private Consumer<String> invalidLetterCommand() {
-        return (command) -> System.out.println("Invalid shape letter in command: " + command);
+        return (command) ->  showMessage("Invalid shape letter in command: " + command);
     }
 
     private boolean canvasExists() {
-        if (Objects.isNull(canvasComponent)) {
-            System.out.println("Please enter a 'Canvas' command first: C w h");
+        if (!canvasComponent.isVisible()) {
+            showMessage("Please enter a 'Canvas' command first: C w h");
             return false;
         }
         return true;
@@ -112,9 +111,14 @@ public class CanvasWorker extends SwingWorker<Void, String> {
     private boolean validCommand(Supplier<Optional<String>> result) {
         Optional<String> errorMessage = result.get();
         if (errorMessage.isPresent()) {
-            System.out.println(errorMessage.get());
+            showMessage(errorMessage.get());
             return false;
         }
         return true;
+    }
+
+    private void showMessage(String message){
+        JOptionPane.showMessageDialog(new JFrame(), message, "Dialog",
+                JOptionPane.ERROR_MESSAGE);
     }
 }
