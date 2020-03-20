@@ -12,43 +12,45 @@ import java.util.function.Supplier;
 
 import static canvas.CommandParser.getCoordinates;
 
-public class CanvasExercise {
+public class CanvasWorker extends SwingWorker<Void, String> {
 
-    private final CanvasComponent canvasComponent;
+    private CanvasComponent canvasComponent;
     private final Map<String, Consumer<String>> shapeMapping;
     private int currentWidth;
     private int currentHeight;
 
-    private CanvasExercise() {
+    CanvasWorker(CanvasComponent canvasComponent) {
         currentWidth = 0;
         currentHeight = 0;
-        canvasComponent = new CanvasComponent();
+        this.canvasComponent = canvasComponent;
         shapeMapping = new HashMap<String, Consumer<String>>() {{
             put("L", (command -> drawLine(command)));
             put("R", (command -> drawRectangle(command)));
             put("C", (command -> drawCanvas(command)));
         }};
-        awaitCommand();
     }
 
-    public static void main(String[] args) {
-        new CanvasExercise();
-    }
-
-    private void awaitCommand() {
+    @Override
+    protected Void doInBackground() throws Exception {
         Scanner scanner = new Scanner(System.in);
         String input;
 
-        while (true) {
+        while (!isCancelled()) {
             System.out.print("Enter command: ");
             input = scanner.nextLine().trim();
             if ("q".equalsIgnoreCase(input)) {
                 System.out.println("Good bye");
                 System.exit(0);
             } else if (!input.isEmpty()) {
-                executeCommand(input);
+                publish(input);
             }
         }
+        return null;
+    }
+
+    protected void process(List<String> commands) {
+        commands.forEach(this::executeCommand);
+        canvasComponent.repaint();
     }
 
     private void executeCommand(String command) {
@@ -60,7 +62,7 @@ public class CanvasExercise {
 
     private void drawCanvas(String command) {
         if (validCommand(() -> CommandParser.validateCanvas(command))) {
-            runLater(() -> {
+            drawLater(() -> {
                 initialiseCanvas(command);
                 CharBox box = ShapeFactory.createBox(currentWidth + 2, currentHeight + 2);
                 canvasComponent.updateCanvas(box);
@@ -80,18 +82,18 @@ public class CanvasExercise {
     private void drawLine(String command) {
         if (canvasExists() && validCommand(() -> CommandParser.validateLine(command, currentWidth, currentHeight))) {
             CharLine charLine = ShapeFactory.createLine(command);
-            runLater(() -> canvasComponent.updateCanvas(charLine));
+            drawLater(() -> canvasComponent.updateCanvas(charLine));
         }
     }
 
     private void drawRectangle(String command) {
         if (canvasExists() && validCommand(() -> CommandParser.validateRectangle(command, currentWidth, currentHeight))) {
             CharRectangle recPainter = ShapeFactory.createRectangle(command);
-            runLater(() -> canvasComponent.updateCanvas(recPainter));
+            drawLater(() -> canvasComponent.updateCanvas(recPainter));
         }
     }
 
-    private void runLater(Runnable run) {
+    private void drawLater(Runnable run) {
         SwingUtilities.invokeLater((run));
     }
 
